@@ -1,0 +1,29 @@
+<!-- TODO: create a HTML form that takes two input fields: username and password -->
+<div class="container">
+  <div class="row">
+
+    <div class="col-sm-3">
+    </div>
+
+    <div class="col-sm-6">
+        <form action="/register" method="POST">
+        <p>{{> message}}</p>
+        <h1>Register</h1>
+        <p></p>
+        <p></p>
+        <p></p>
+        <label for="username">Username:</label>
+        <input type="text" id="username" name="username" required>
+        <br>
+        <label for="password">Password:</label>
+        <input type="password" id="password" name="password" required>
+        <p></p>
+        <button type="Login" class="btn btn-primary">Register</button>
+</form>
+<p>     </p>
+<p>Don't have an account? <a href='/login'>Login</a></p>
+    </div>
+    <div class="col-sm-3">
+    </div>
+  </div>
+</div>
