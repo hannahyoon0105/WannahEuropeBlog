@@ -1,7 +1,8 @@
 DROP TABLE IF EXISTS users;
 CREATE TABLE users (
     username VARCHAR(50) PRIMARY KEY,
-    password VARCHAR(60) NOT NULL
+    password VARCHAR(60) NOT NULL,
+    admin BOOLEAN NOT NULL
     -- you guys had password as char and idk why
 );
 
