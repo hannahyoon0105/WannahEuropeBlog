@@ -81,7 +81,8 @@ app.use(
   })
 );
 const user = {
-  username: undefined
+  username: "",
+  admin: false
 };
 Handlebars.registerHelper('ifCond', function(v1, v2, options) {
   if(v1 === v2) {
@@ -100,13 +101,7 @@ app.get('/welcome', (req, res) => {
 });
 
 app.get('/', function (req, res) {
-  try{
-    res.render('pages/home',{
-      username: req.session.user.username
-    });}
-  catch{
-    res.render('pages/login');
-  }
+    res.render('pages/home');
   });
 
 app.get('/test', function (req, res) {
@@ -127,7 +122,7 @@ app.post('/register', async (req, res) => {
   
     // To-DO: Insert username and hashed password into the 'users' table
     const username = req.body.username;
-    const query = 'INSERT INTO users (username, password) VALUES($1, $2) RETURNING *;';
+    const query = 'INSERT INTO users (username, password, admin) VALUES($1, $2, false) RETURNING *;';
     
     db.one(query, [username, hash])
         .then(data => {
@@ -156,8 +151,9 @@ else, save the user in the session variable
     if (match) {
       user.username = login_user.username;
       req.session.user = user;
+      req.session.user.admin = login_user.admin;
       req.session.save();
-      res.redirect('/global');
+      res.redirect('/home');
     } else {
       res.render('pages/login' ,{
         message: `Incorrect username or password.`
@@ -171,106 +167,25 @@ else, save the user in the session variable
 
 });
 
-// Authentication Middleware.
-const auth = (req, res, next) => {
-  if (!req.session.user) {
-    // Default to login page.
-    return res.redirect('/login');
-  }
-  next();
-};
-
-// Authentication Required
-app.use(auth);
-
-
-app.get('/post', function (req, res) {
-  res.render('pages/post', {
-    username: req.session.user.username
-  });
-});
-
-
 app.get('/home', function (req, res) {
-  res.header('Cache-Control', 'no-store, no-cache, must-revalidate, private');
-  const username = req.session.user.username;
-  const message = req.query.message
-  db.any(`
-  SELECT 
-    P.post_id, 
-   p.author, 
-    p.caption, 
-    p.recipe_id, 
-    p.date_created, 
-    p.image_url,
-    (SELECT COUNT(username) FROM likes l WHERE l.post_id = p.post_id) as like_count,
-    EXISTS (
-  SELECT 1 FROM likes l WHERE l.post_id = p.post_id AND l.username = $1
-) AS liked,
-    EXISTS (
-  SELECT 1 FROM followers f WHERE f.follower = $1 AND f.followee = p.author
-) AS followed,
-json_agg(
-json_build_object(
-    'username', c.username, 
-    'body', c.body, 
-    'date_created', c.date_created,
-    'post_id', c.post_id
-) 
-ORDER BY c.date_created DESC
-) AS comments
-  FROM posts p 
-  LEFT JOIN followers f ON f.followee = p.author 
-  LEFT JOIN users u ON u.username = f.follower 
-  LEFT JOIN comments c ON c.post_id = p.post_id
-  WHERE u.username= $1
-  
-  
-GROUP BY 
-P.post_id, 
-   p.author, 
-    p.caption, 
-    p.recipe_id, 
-    p.date_created, 
-    p.image_url
-ORDER BY 
-p.date_created DESC;`, [username])
-    .then(posts => {
-      posts.forEach(post => {
-        console.log('Post:', post);
-      });
-      res.render('pages/home', { posts , username: req.session.user.username, message});
-    })
-    .catch(err => {
-      console.log(err);
-      res.render('pages/home', {
-      error: true,
-      message: 'Error getting posts',
-      username: req.session.user.username
-      });
-    });
+  res.render('pages/home');
 });
 
 
-app.get('/global', function (req, res) {
+app.get('/blog', function (req, res) {
   res.header('Cache-Control', 'no-store, no-cache, must-revalidate, private');
   const username = req.session.user.username;
   const message = req.query.message
   db.any(`
   SELECT 
     P.post_id, 
-    p.author, 
     p.caption, 
-    p.recipe_id, 
     p.date_created, 
-    p.image_url,
+    p.image_filepath,
     (SELECT COUNT(username) FROM likes l WHERE l.post_id = p.post_id) as like_count,
     EXISTS (
         SELECT 1 FROM likes l WHERE l.post_id = p.post_id AND l.username = $1
     ) AS liked,
-    EXISTS (
-      SELECT 1 FROM followers f WHERE f.follower = $1 AND f.followee = p.author
-    ) AS followed,
     json_agg(
         json_build_object(
             'username', c.username, 
@@ -286,11 +201,9 @@ app.get('/global', function (req, res) {
     comments c ON c.post_id = p.post_id
   GROUP BY 
     P.post_id, 
-    p.author, 
     p.caption, 
-    p.recipe_id, 
     p.date_created, 
-    p.image_url
+    p.image_filepath
   ORDER BY 
     p.date_created DESC;`, [username])
 
@@ -298,11 +211,11 @@ app.get('/global', function (req, res) {
       posts.forEach(post => {
         console.log('Post:', post);
       });
-      res.render('pages/global', { posts , username: req.session.user.username, message});
+      res.render('pages/blog', {posts , username: req.session.user.username, admin: req.session.user.admin, message});
     })
     .catch(err => {
       console.log(err);
-      res.render('pages/global', {
+      res.render('pages/blog', {
       error: true,
       message: 'Error getting posts',
       username: req.session.user.username});
@@ -323,32 +236,10 @@ app.get('/user', function(req,res) {
   ORDER BY posts.date_created DESC;
   `;
 
-  const followers_q = `SELECT COUNT(follower) as count
-  FROM followers
-  WHERE followee = '${req.query.username}'
-  ;
-  `;
-
-  const following_q = `SELECT COUNT(followee) as count
-  FROM followers
-  WHERE follower = '${req.query.username}'
-  ;
-  `;
-
-  const is_Followed = `
-  SELECT EXISTS (
-    SELECT 1 
-    FROM Followers f 
-    WHERE f.follower = '${req.session.user.username}' AND f.followee = '${req.query.username}'
-  );
-`;
   db.task('get-everything', task => {
     return task.batch([
       task.any(user_query),
-      task.any(post_query),
-      task.any(followers_q),
-      task.any(following_q),
-      task.any(is_Followed)
+      task.any(post_query)
     ])
   })
   .then (userdata => {
@@ -356,10 +247,8 @@ app.get('/user', function(req,res) {
     res.render('pages/user', 
     {user: userdata[0][0].username, 
       posts: userdata[1],
-      followers: userdata[2][0].count,
-      following: userdata[3][0].count,
-      is_Followed: userdata[4][0],
       username: req.session.user.username,
+      admin: req.session.user.admin,
       self: req.query.self,
       message: req.query.message
       });
@@ -367,112 +256,57 @@ app.get('/user', function(req,res) {
   })
   .catch (error => {
     console.log(error)
-    res.render('pages/home', {username: req.session.user.username, message: "Error: User not found"});
+    res.render('pages/home', {username: req.session.user.username, admin: req.session.user.admin, message: "Error: User not found"});
   });
   
 });
+// Authentication Middleware.
+const auth = (req, res, next) => {
+  if (!req.session.user) {
+    // Default to login page.
+    return res.redirect('/login');
+  }
+  next();
+};
 
-app.get('/recipe', function (req, res) {
+// Authentication Required
+app.use(auth);
 
-  const recipe_query = `SELECT *
-  FROM RECIPES
-  INNER JOIN users ON users.username = recipes.author
-  WHERE recipe_id = $1`
 
-  const recipe_id = req.query.recipe_id;
-  var likes_query = `
-  SELECT COUNT(username) as likes
-  FROM likes
-  WHERE post_id IN (
-  SELECT post_id
-  FROM posts
-  WHERE recipe_id = ${recipe_id})
-  ;
-  `
+app.get('/post', function (req, res) {
+  console.log(req.session.user.admin);
+  if (req.session.user.admin){
+    res.render('pages/post', {
+      username: req.session.user.username,
+      admin: req.session.user.admin
+    });
+  }
 
-  var reposts_query = `
-  SELECT COUNT(post_id)-1 as reposts
-  FROM posts
-  WHERE recipe_id = ${recipe_id}
-  ;
-  `
-  db.task('get-everything', task => {
-    return task.batch([
-      task.any(recipe_query, recipe_id),
-      task.any(likes_query), //query 1
-      task.any(reposts_query), //query 2
-    ]);
-  })
-    .then(recipedata => {
-      // console.log(recipedata)
-      const sqlTimeStamp = recipedata[0][0].date_created;
-      // const jsDate = new Date(sqlTimeStamp);
-      // const formattedDate = `${jsDate.toLocaleDateString()}`;
-      const formattedDate = formatSQLDate(sqlTimeStamp);
-      const likes = recipedata[1][0].likes;
-      const reposts = recipedata[2][0].reposts;
-
-    res.render('pages/recipe', {username: req.session.user.username, 
-                                recipe_id: recipedata[0][0].recipe_id, 
-                                title: recipedata[0][0].title, 
-                                author: recipedata[0][0].author, 
-                                body: recipedata[0][0].body, 
-                                date_created: formattedDate, 
-                                profile_picture: recipedata[0][0].profile_pic,
-                                likes: likes,
-                                reposts: reposts});
-  })
-  .catch (error => {
-    console.log(error)
-    res.render('pages/recipe');
-  })
- });
+  else {
+    res.redirect('/home', {username: req.session.user.username,
+      admin: req.session.user.admin, message: "Post permission denied."});
+  }
+});
 
  app.post('/create-post', async (req, res) => { //post
   try {
-    const author = req.session.user.username;
-    const title = req.body.title;
     const body = req.body.body;
     const date_created = new Date();
     const caption = req.body.caption;
-    const image_url = req.body.image_url;
-    const original_flag = true;
+    const image_filepath = req.body.image_filepath;
+    const bingo_id = null;
+    if (req.body.bingo_id){
+      bingo_id = req.body.bingo_id;
+    }
 
-    db.one('INSERT INTO recipes (title, author, body, date_created) VALUES ($1, $2, $3, $4) RETURNING recipe_id;', [title, author, body, date_created])
-    .then(data => {
-      db.none('INSERT INTO posts (author, caption, recipe_id, date_created, image_url, original_flag) VALUES ($1, $2, $3, $4, $5, $6)', [author, caption, data.recipe_id, date_created, image_url, original_flag]);
-      res.redirect('/global');
-    })
+    db.none('INSERT INTO posts (caption, date_created, image_filepath, bingo_id) VALUES ($1, $2, $3, $4)', [caption, date_created, image_filepath, bingo_id]);
+    res.redirect('/blog');
   } catch (error) {
     console.error('Error creating post:', error);
-    res.redirect('/global'); 
+    res.redirect('/blog'); 
   }
 });
 
-app.get('/repost', function (req, res) {
-  console.log(req.query);
-  res.render('pages/repost', {
-    username: req.session.user.username,
-    recipe_id: req.query.recipe_id
-  });
-});
-app.post('/repost', async (req, res) => { //post
-  try {
-    const author = req.session.user.username;
-    const title = req.body.title;
-    const date_created = new Date();
-    const caption = req.body.caption;
-    const image_url = req.body.image_url;
-    const original_flag = false;
-    const recipe_id = req.body.recipe_id;
-
-    await db.none('INSERT INTO posts (author, caption, recipe_id, date_created, image_url, original_flag) VALUES ($1, $2, $3, $4, $5, $6)', [author, caption, recipe_id, date_created, image_url, original_flag]);
-    res.redirect('/global');
-  } catch (error) {
-    console.error('Error creating post:', error);
-    res.redirect('/global'); 
-  }
-});
 app.post('/like-post', async (req, res) => { //like
   try {
     const { post_id, username } = req.body;
@@ -490,94 +324,6 @@ app.post('/like-post', async (req, res) => { //like
   }
 });
 
-app.post('/like-post-g', async (req, res) => { //like
-  try {
-    const { post_id, username } = req.body;
-    const existingLike = await db.oneOrNone('SELECT * FROM likes WHERE post_id = $1 AND username = $2', [post_id, username]);
-    if (existingLike) {
-      await db.none('DELETE FROM likes WHERE post_id = $1 AND username = $2', [post_id, username]);
-      res.redirect('/global?message=Like%20removed');
-    } else {
-      await db.none('INSERT INTO likes (post_id, username) VALUES ($1, $2)', [post_id, username]);
-      res.redirect('/global?message=Post%20liked');
-    }
-  } catch (error) {
-    console.error('Error liking post:', error);
-    res.redirect('/global?message=Error%20liking%20post');
-  }
-});
-app.post('/follow-user', async (req, res) => { //follow
-  try {
-    const { username, followee } = req.body;
-    const existingFollower = await db.oneOrNone('SELECT * FROM followers WHERE follower = $1 AND followee = $2', [username, followee]);
-    if (existingFollower) {
-      await db.none('DELETE FROM followers WHERE follower = $1 AND followee = $2', [username, followee]);
-      res.redirect('/home?message=User%20unfollowed');
-    } else {
-      await db.none('INSERT INTO followers (follower, followee) VALUES ($1, $2)', [username, followee]);
-      res.redirect('/home?message=User%20followed');
-    }
-  } catch (error) {
-    console.error('Error liking post:', error);
-    res.status(500).json({ success: false, message: 'Error following user' });
-  }
-});
-
-
-app.post('/follow-user-g', async (req, res) => { //follow
-  try {
-    const { username, followee } = req.body;
-    const existingFollower = await db.oneOrNone('SELECT * FROM followers WHERE follower = $1 AND followee = $2', [username, followee]);
-    if (existingFollower) {
-      await db.none('DELETE FROM followers WHERE follower = $1 AND followee = $2', [username, followee]);
-      res.redirect('/global?message=User%20unfollowed');
-    } else {
-      await db.none('INSERT INTO followers (follower, followee) VALUES ($1, $2)', [username, followee]);
-      res.redirect('/global?message=User%20followed');
-    }
-  } catch (error) {
-    console.error('Error liking post:', error);
-    res.status(500).json({ success: false, message: 'Error following user' });
-  }
-});
-
-app.post('/follow-user-u', async (req, res) => { //follow
-  try {
-    const { username, followee } = req.body;
-    const existingFollower = await db.oneOrNone('SELECT * FROM followers WHERE follower = $1 AND followee = $2', [username, followee]);
-    if (existingFollower) {
-      await db.none('DELETE FROM followers WHERE follower = $1 AND followee = $2', [username, followee]);
-      console.log(req.body)
-      res.redirect(`/user?username=${followee}&message=User%20unfollowed`);
-    } else {
-      await db.none('INSERT INTO followers (follower, followee) VALUES ($1, $2)', [username, followee]);
-      console.log(req.body)
-      res.redirect(`/user?username=${followee}&message=User%20followed`);
-    }
-  } catch (error) {
-    console.error('Error following user:', error);
-    res.status(500).json({ success: false, message: 'Error following user' });
-  }
-});
-
-app.post('/follow-user-u-g', async (req, res) => { //follow
-  try {
-    const { username, followee } = req.body;
-    const existingFollower = await db.oneOrNone('SELECT * FROM followers WHERE follower = $1 AND followee = $2', [username, followee]);
-    if (existingFollower) {
-      await db.none('DELETE FROM followers WHERE follower = $1 AND followee = $2', [username, followee]);
-      console.log(req.body)
-      res.redirect(`/user?username=${followee}&message=User%20unfollowed`);
-    } else {
-      await db.none('INSERT INTO followers (follower, followee) VALUES ($1, $2)', [username, followee]);
-      console.log(req.body)
-      res.redirect(`/user?username=${followee}&message=User%20followed`);
-    }
-  } catch (error) {
-    console.error('Error liking post:', error);
-    res.status(500).json({ success: false, message: 'Error following user' });
-  }
-});
 app.post('/comment-post', function (req, res) {
   const date_ = new Date();
   const query =
@@ -598,25 +344,6 @@ app.post('/comment-post', function (req, res) {
     });
 });
 
-app.post('/comment-post-g', function (req, res) {
-  const date_ = new Date();
-  const query =
-    'insert into comments (post_id, username, body, date_created) values ($1, $2, $3, $4)  returning * ;';
-  db.any(query, [
-    req.body.post_id,
-    req.body.username,
-    req.body.comment,
-    date_
-  ])
-    .then(function (data) {
-      console.log(data)
-      res.redirect('/global?message=Comment%20posted');
-    })
-    .catch(function (err) {
-      console.error('Error commenting on post:', err);
-      res.redirect('/global?message=Error:%20comment%20post%20unsuccessful&error=true');
-    });
-});
 
 app.get('/logout', (req, res) => {
   req.session.destroy();
