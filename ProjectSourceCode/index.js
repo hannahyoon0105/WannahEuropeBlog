@@ -12,6 +12,7 @@ const bodyParser = require('body-parser');
 const session = require('express-session'); // To set the session object. To store or access session data, use the `req.session`, which is (generally) serialized as JSON by the store.
 const bcrypt = require('bcrypt'); //  To hash passwords
 const axios = require('axios'); // To make HTTP requests from our server. We'll learn more about it in Part C.
+const fs = require('fs');
 
 // *****************************************************
 // <!-- Section 2 : Connect to DB -->
@@ -252,6 +253,29 @@ p.date_created DESC;`, [username])
 });
 
 
+
+
+app.get('/bingo', function (req, res) {
+  // write code to load data from bingo.json file which is stored in the init_data folder in directory
+  fs.readFile('init_data/bingo.json', 'utf8', (err, data) => {
+    if (err) {
+      console.error('Error reading the file:', err);
+      return;
+    }
+    // console.log('File content:', data);
+
+    let bingoData = JSON.parse(data);
+    const letters = ['B', 'I', 'N', 'G', 'O'];
+    res.render('pages/bingo', {
+      username: req.session.user.username,
+      bingo_data: bingoData,
+      letters: letters
+    });
+  });
+
+
+});
+
 app.get('/global', function (req, res) {
   res.header('Cache-Control', 'no-store, no-cache, must-revalidate, private');
   const username = req.session.user.username;
@@ -296,7 +320,7 @@ app.get('/global', function (req, res) {
 
     .then(posts => {
       posts.forEach(post => {
-        console.log('Post:', post);
+        // console.log('Post:', post);
       });
       res.render('pages/global', { posts , username: req.session.user.username, message});
     })

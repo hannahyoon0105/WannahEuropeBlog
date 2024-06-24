@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bingo Board</title>
+    <link rel="stylesheet" href="/styles.css">
+    <style>
+        .bingo_parent {
+            display: flex;
+            justify-content: center;
+        }
+        .bingo-board {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 1px;
+            background-color: #000;
+            max-width: 1200px;
+            justify-content: center;
+        }
+
+        .bingo-cell {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #fff;
+            position: relative;
+            cursor: pointer;
+            user-select: none;
+            min-width: 100px;
+            min-height: 100px;
+        }
+
+        .bingo-header {
+            font-weight: bold;
+            text-align: center;
+            background-color: #ccc;
+            font-size: xx-large;
+        }
+
+        .bingo-cell.completed {
+            background-color: #ccc;
+            text-decoration: line-through;
+        }
+    </style>
+</head>
+<body>
+    <h1>Bingo Board</h1>
+    <div class="bingo_parent">
+        <div class="bingo-board" id="bingoBoard">
+            {{#each letters}}
+                <div class="bingo-cell bingo-header">{{this}}</div>
+            {{/each}}
+            {{#each bingo_data}}
+                <div class="bingo-cell {{#if completed}}completed{{/if}}" data-index="{{@index}}">
+                    {{text}}
+                </div>
+            {{/each}}
+        </div>
+    </div>
+    <script src="/bingo.js"></script>
+</body>
+</html>
