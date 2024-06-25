@@ -66,6 +66,8 @@ app.set('view engine', 'hbs');
 app.set('views', path.join(__dirname, 'views'));
 app.use(bodyParser.json()); // specify the usage of JSON for parsing request body.
 
+app.use('/resources', express.static(path.join(__dirname, 'resources'))); // allows use of locally saved imgs
+
 // initialize session variables
 app.use(
   session({
@@ -84,6 +86,7 @@ const user = {
   username: "",
   admin: false
 };
+
 Handlebars.registerHelper('ifCond', function(v1, v2, options) {
   if(v1 === v2) {
     return options.fn(this);
@@ -101,8 +104,19 @@ app.get('/welcome', (req, res) => {
 });
 
 app.get('/', function (req, res) {
-    res.render('pages/home');
-  });
+  // Define a default user object
+  const defaultUser = {
+    username: "",
+    admin: false
+  };
+
+  // Check if req.user and req.session.user exist before trying to access their properties
+  const username = req.user ? req.user.username : defaultUser.username;
+  const admin = req.session && req.session.user ? req.session.user.admin : defaultUser.admin;
+
+  // Render the blog page with either the logged-in user's info or the default user info
+  res.redirect('/blog');
+});
 
 app.get('/test', function (req, res) {
     res.redirect('/login');
@@ -153,7 +167,8 @@ else, save the user in the session variable
       req.session.user = user;
       req.session.user.admin = login_user.admin;
       req.session.save();
-      res.redirect('/home');
+      console.log("scucessful login");
+      res.redirect('/blog');
     } else {
       res.render('pages/login' ,{
         message: `Incorrect username or password.`
@@ -168,17 +183,51 @@ else, save the user in the session variable
 });
 
 app.get('/home', function (req, res) {
-  res.render('pages/home');
+  // const defaultUser = {
+  //   username: "",
+  //   admin: false
+  // };
+  const username = req.session.user ? req.session.user.username : null;
+
+  // Check if req.user and req.session.user exist before trying to access their properties
+  const admin = req.session.user ? req.session.user.admin : false;
+
+  const renderOptions = {
+    username: username, // This will be null if user is not logged in
+    admin: admin // Handle admin flag
+  };
+  res.render('pages/home', renderOptions);
 });
 
+app.get('/bingo', function (req, res) {
+  const username = req.session.user ? req.session.user.username : null;
+
+  const admin = req.session.user ? req.session.user.admin : false;
+
+  db.any('SELECT * FROM bingo;')
+  .then(bingo => {
+    console.log(bingo);
+    const renderOptions = {
+      username: username, // This will be null if user is not logged in
+      admin: admin,
+      bingo_data: bingo // Handle admin flag
+    };
+
+    res.render('pages/bingo', renderOptions);
+  })
+  .catch(err => {
+    console.log(err);
+    console.log("You are an idiot and  a failure");
+  })
+});
 
 app.get('/blog', function (req, res) {
-  res.header('Cache-Control', 'no-store, no-cache, must-revalidate, private');
-  const username = req.session.user.username;
+  console.log("rendering blog")
+  const username = req.session.user ? req.session.user.username : null;
   const message = req.query.message
   db.any(`
   SELECT 
-    P.post_id, 
+    p.post_id,
     p.caption, 
     p.date_created, 
     p.image_filepath,
@@ -208,10 +257,13 @@ app.get('/blog', function (req, res) {
     p.date_created DESC;`, [username])
 
     .then(posts => {
-      posts.forEach(post => {
-        console.log('Post:', post);
-      });
-      res.render('pages/blog', {posts , username: req.session.user.username, admin: req.session.user.admin, message});
+      const renderOptions = {
+        posts,
+        message,
+        username: username, // This will be null if user is not logged in
+        admin: req.session.user ? req.session.user.admin : false // Handle admin flag
+      };
+      res.render('pages/blog', renderOptions);
     })
     .catch(err => {
       console.log(err);
@@ -243,7 +295,7 @@ app.get('/user', function(req,res) {
     ])
   })
   .then (userdata => {
-    console.log(userdata)
+    // console.log(userdata)
     res.render('pages/user', 
     {user: userdata[0][0].username, 
       posts: userdata[1],
@@ -274,7 +326,7 @@ app.use(auth);
 
 
 app.get('/post', function (req, res) {
-  console.log(req.session.user.admin);
+  // console.log(req.session.user.admin);
   if (req.session.user.admin){
     res.render('pages/post', {
       username: req.session.user.username,
@@ -335,7 +387,7 @@ app.post('/comment-post', function (req, res) {
     date_
   ])
     .then(function (data) {
-      console.log(data)
+      // console.log(data)
       res.redirect('/home?message=Comment%20posted');
     })
     .catch(function (err) {
