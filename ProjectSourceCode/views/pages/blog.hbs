@@ -157,27 +157,11 @@
                         {{/ifCond}}
                         <button class="btn" id="author-link"><strong>{{author}}</strong></button>
                 </form> 
-                <form action="/follow-user-g" method="POST">
-                        <input type="hidden" name="username" value={{../username}}> 
-                        <input type="hidden" name="followee" value={{author}}> 
-                        {{#ifCond ../username author }}
-                        {{else}}
-                            {{#if followed}}
-                                <button class="follow-button followed btn btn-outline-info">Following</button>
-                            {{else}}
-                                <button class="follow-button followed btn btn-info">Follow</button>
-                            {{/if}}
 
-                        {{/ifCond}}               
-                </form> 
             </div>   
 
             <p class="date">{{fixDate date_created}}</p>
 
-            <form action="/recipe" method="GET">
-                    <input type="hidden" name="recipe_id" value={{recipe_id}}>
-                    <button class="follow-button btn btn-info">View Recipe</button>
-                </form> 
         </div>
     <div class="container">
         <div class="row">
@@ -188,7 +172,7 @@
         <div class="card-body" id="post-content">
             
             <div class="image-container">
-                <img src="../../resources/xina.jpg" alt="Posted Photo" id="post-photo" class="card-image-top">
+                <img src="{{image_filepath}}" alt="Posted Photo" id="post-photo" class="card-image-top">
             </div>
             
                 <form action="/like-post-g" method="POST">
