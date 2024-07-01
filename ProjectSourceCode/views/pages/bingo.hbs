@@ -1,7 +1,17 @@
-<h1>hehehehe... bingo style</h1>
-{{#each bingo_data}}
-    <div>
-        <h1> {{this.body}}</h1>
-        <h3> {{this.completed}} </h3>
+<div class="container text-center">
+    <div class="d-flex justify-content-center align-items-center bingo-title">
+        <div>
+            <h1>The wannah bingo board</h1>
+        </div>
+        <div>
+            <p>We will continue to update this board throughout our trip. Whenever we accomplish something on this board, we will post and update the board accordingly!</p>
+        </div>
     </div>
-{{/each}}
+    <div class="bingo-board">
+        {{#each bingo_data}}
+            <div class="bingo-cell {{#if this.completed}}completed{{/if}}">
+                <h2>{{this.body}}</h2>
+            </div>
+        {{/each}}
+    </div>
+</div>
