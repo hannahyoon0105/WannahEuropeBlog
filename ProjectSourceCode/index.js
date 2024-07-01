@@ -12,6 +12,8 @@ const bodyParser = require('body-parser');
 const session = require('express-session'); // To set the session object. To store or access session data, use the `req.session`, which is (generally) serialized as JSON by the store.
 const bcrypt = require('bcrypt'); //  To hash passwords
 const axios = require('axios'); // To make HTTP requests from our server. We'll learn more about it in Part C.
+const multer = require('multer'); // used for image upload
+const fs = require('fs');
 
 // *****************************************************
 // <!-- Section 2 : Connect to DB -->
@@ -68,6 +70,8 @@ app.use(bodyParser.json()); // specify the usage of JSON for parsing request bod
 
 app.use('/resources', express.static(path.join(__dirname, 'resources'))); // allows use of locally saved imgs
 
+app.use('/uploads', express.static(path.join(__dirname, 'uploads'))); // 
+
 // initialize session variables
 app.use(
   session({
@@ -93,6 +97,22 @@ Handlebars.registerHelper('ifCond', function(v1, v2, options) {
   }
   return options.inverse(this);
 });
+
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    const uploadDir = 'uploads/';
+    if (!fs.existsSync(uploadDir)) {
+      fs.mkdirSync(uploadDir);
+    }
+    cb(null, uploadDir);
+  },
+  filename: (req, file, cb) => {
+    cb(null, `${file.originalname}`);
+  }
+});
+
+const upload = multer({ storage });
+
 
 // *****************************************************
 // <!-- Section 4 : API Routes -->
@@ -167,7 +187,7 @@ else, save the user in the session variable
       req.session.user = user;
       req.session.user.admin = login_user.admin;
       req.session.save();
-      console.log("scucessful login");
+      // console.log("scucessful login");
       res.redirect('/blog');
     } else {
       res.render('pages/login' ,{
@@ -206,7 +226,7 @@ app.get('/bingo', function (req, res) {
 
   db.any('SELECT * FROM bingo;')
   .then(bingo => {
-    console.log(bingo);
+    // console.log(bingo);
     const renderOptions = {
       username: username, // This will be null if user is not logged in
       admin: admin,
@@ -312,6 +332,17 @@ app.get('/user', function(req,res) {
   });
   
 });
+
+app.post('/upload', upload.single('image'), (req, res) => {
+  if (!req.file) {
+    console.log("You fucked up the file upload")
+    return res.status(400).send('No file uploaded.');
+  }
+  console.log("file uploaded successfully")
+  res.status(200).send({ url: `uploads/${req.file.filename}` });
+});
+
+
 // Authentication Middleware.
 const auth = (req, res, next) => {
   if (!req.session.user) {
@@ -340,24 +371,47 @@ app.get('/post', function (req, res) {
   }
 });
 
- app.post('/create-post', async (req, res) => { //post
-  try {
-    const body = req.body.body;
-    const date_created = new Date();
-    const caption = req.body.caption;
-    const image_filepath = req.body.image_filepath;
-    const bingo_id = null;
-    if (req.body.bingo_id){
-      bingo_id = req.body.bingo_id;
-    }
+//  app.post('/create-post', async (req, res) => { //post
+//   try {
+//     const body = req.body.body;
+//     const date_created = new Date();
+//     const caption = req.body.caption;
+//     const image_filepath = 'uploads/' + req.body.image;
+//     let bingo_id = null;
+//     if (req.body.bingo_id){
+//       bingo_id = req.body.bingo_id;
+//     }
+//     console.log(req.body)
 
-    db.none('INSERT INTO posts (caption, date_created, image_filepath, bingo_id) VALUES ($1, $2, $3, $4)', [caption, date_created, image_filepath, bingo_id]);
-    res.redirect('/blog');
-  } catch (error) {
-    console.error('Error creating post:', error);
-    res.redirect('/blog'); 
+//     db.none('INSERT INTO posts (caption, date_created, image_filepath, bingo_id) VALUES ($1, $2, $3, $4)', [caption, date_created, image_filepath, bingo_id]);
+//     res.redirect('/blog');
+//   } catch (error) {
+//     console.error('Error creating post:', error);
+//     res.redirect('/blog');
+//   }
+// });
+
+
+app.post('/create-post', upload.single('image'), async (req, res) => {
+  if (!req.file) {
+    console.log("No file uploaded");
+    return res.status(400).send('No file uploaded.');
   }
+  const caption = req.body.caption; // Assuming you have a caption field in your form
+  const imageFilename = 'uploads/' + req.file.filename; // Accessing the filename of the uploaded file
+  const date_created = new Date();
+  const bingo_id = req.body.bingo_id;
+  // Here you can use both caption and imageFilename to insert into your database or perform other actions
+  console.log("File uploaded successfully", { caption, imageFilename });
+
+  // Example: Insert into database (pseudo code)
+  // await db.insert('posts', { caption, imageFilename });
+  db.none('INSERT INTO posts (caption, date_created, image_filepath, bingo_id) VALUES ($1, $2, $3, $4)', [caption, date_created, imageFilename, bingo_id]);
+  // res.status(200).send({ message: "Post created successfully", url: `uploads/${imageFilename}` });
+  res.redirect('/blog');
 });
+
+
 
 app.post('/like-post', async (req, res) => { //like
   try {
