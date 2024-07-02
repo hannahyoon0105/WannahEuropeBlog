@@ -175,7 +175,7 @@
                 <img src="{{image_filepath}}" alt="Posted Photo" id="post-photo" class="card-image-top">
             </div>
             
-                <form action="/like-post-g" method="POST">
+                <form action="/like-post" method="POST">
                     <input type="hidden" name="post_id" value={{post_id}}> 
                     <input type="hidden" name="username" value={{../username}}> 
                     {{#if liked}}
@@ -217,7 +217,7 @@
   
         </div>
         <br>
-        <form action="/comment-post-g" method="POST">
+        <form action="/comment-post" method="POST">
                     <input type="hidden" name="post_id" value={{post_id}}> 
                     <input type="hidden" name="username" value={{../username}}> 
                     <input type="text" id="comment" name="comment" required placeholder="Add comment...">    

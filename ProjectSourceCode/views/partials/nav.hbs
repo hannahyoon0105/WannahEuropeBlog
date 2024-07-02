@@ -30,7 +30,11 @@
             <a class = "nav-link" href = '/logout'>Logout</a>
             {{/if}}
         </li>
-
+        {{#if admin}}
+          <li class="nav-item">
+            <a class = "nav-link" href = '/post'>Post</a>
+          </li>
+        {{/if}}
       </ul>
     </div>
 

@@ -414,17 +414,20 @@ app.post('/create-post', upload.single('image'), async (req, res) => {
 
 
 app.post('/like-post', async (req, res) => { //like
+  console.log('liking post')
   try {
     const { post_id, username } = req.body;
     const existingLike = await db.oneOrNone('SELECT * FROM likes WHERE post_id = $1 AND username = $2', [post_id, username]);
     if (existingLike) {
       await db.none('DELETE FROM likes WHERE post_id = $1 AND username = $2', [post_id, username]);
-      res.redirect('/home?message=Like%20removed');
+      res.redirect('/blog?message=Like%20removed');
     } else {
+      console.log('this should be printed')
       await db.none('INSERT INTO likes (post_id, username) VALUES ($1, $2)', [post_id, username]);
-      res.redirect('/home?message=Post%20liked');
+      res.redirect('/blog?message=Post%20liked');
     }
   } catch (error) {
+
     console.error('Error liking post:', error);
     res.redirect('/home?message=Error%20liking%20post');
   }
@@ -442,11 +445,11 @@ app.post('/comment-post', function (req, res) {
   ])
     .then(function (data) {
       // console.log(data)
-      res.redirect('/home?message=Comment%20posted');
+      res.redirect('/blog?message=Comment%20posted');
     })
     .catch(function (err) {
       console.error('Error commenting on post:', err);
-      res.redirect('/home?message=Comment%20posted');
+      res.redirect('/blog?message=Comment%20posted');
     });
 });
 
