@@ -224,7 +224,7 @@ app.get('/bingo', function (req, res) {
 
   const admin = req.session.user ? req.session.user.admin : false;
 
-  db.any('SELECT * FROM bingo;')
+  db.any('SELECT * FROM bingo ORDER BY item_id;')
   .then(bingo => {
     // console.log(bingo);
     const renderOptions = {
@@ -358,17 +358,25 @@ app.use(auth);
 
 app.get('/post', function (req, res) {
   // console.log(req.session.user.admin);
-  if (req.session.user.admin){
-    res.render('pages/post', {
-      username: req.session.user.username,
-      admin: req.session.user.admin
-    });
-  }
+  db.many('SELECT * FROM bingo ORDER BY item_id;')
+  .then(bingo_data => {
+    if (req.session.user.admin){
+      res.render('pages/post', {
+        username: req.session.user.username,
+        admin: req.session.user.admin,
+        bingo_data: bingo_data
+      });
+    }
+    else {
+      res.redirect('/home', {username: req.session.user.username,
+        admin: req.session.user.admin, message: "Post permission denied."});
+    }
+  })
+  .catch(error => {
+    console.error(error)
+  })
 
-  else {
-    res.redirect('/home', {username: req.session.user.username,
-      admin: req.session.user.admin, message: "Post permission denied."});
-  }
+  
 });
 
 //  app.post('/create-post', async (req, res) => { //post
@@ -400,13 +408,21 @@ app.post('/create-post', upload.single('image'), async (req, res) => {
   const caption = req.body.caption; // Assuming you have a caption field in your form
   const imageFilename = 'uploads/' + req.file.filename; // Accessing the filename of the uploaded file
   const date_created = new Date();
-  const bingo_id = req.body.bingo_id;
+  let bingo_id = req.body.bingo_id;
+  if (bingo_id == "") {
+    bingo_id = null;
+  }
   // Here you can use both caption and imageFilename to insert into your database or perform other actions
   console.log("File uploaded successfully", { caption, imageFilename });
 
   // Example: Insert into database (pseudo code)
   // await db.insert('posts', { caption, imageFilename });
   db.none('INSERT INTO posts (caption, date_created, image_filepath, bingo_id) VALUES ($1, $2, $3, $4)', [caption, date_created, imageFilename, bingo_id]);
+  if (bingo_id){
+    db.none('UPDATE bingo SET completed = true WHERE item_id = $1', [bingo_id]);
+  }
+
+  
   // res.status(200).send({ message: "Post created successfully", url: `uploads/${imageFilename}` });
   res.redirect('/blog');
 });

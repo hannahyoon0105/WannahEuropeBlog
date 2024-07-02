@@ -18,7 +18,7 @@ CREATE TABLE posts (
     post_id SERIAL PRIMARY KEY,
     caption VARCHAR(200),
     date_created TIMESTAMP NOT NULL,
-    bingo_id INTEGER REFERENCES bingo(item_id),
+    bingo_id INTEGER REFERENCES bingo(item_id) NULL,
     image_filepath VARCHAR(2000) NOT NULL
 );
 

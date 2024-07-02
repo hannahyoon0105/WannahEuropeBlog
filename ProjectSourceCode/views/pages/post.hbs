@@ -20,8 +20,14 @@
   </div>
   <div class="form-group">
     <label for="bingo_id">Bingo ID: </label>
-    <input type="Text" id="binog_id" name="bingo_id" class="form-control">
+    <select id="bingo_id" name="bingo_id" class="form-control">
+        <option value=""></option>
+      {{#each bingo_data}}
+        <option value="{{this.item_id}}">{{this.body}}</option>
+      {{/each}}
+    </select>
   </div>
+
   <div class="form-group">
     <label for="image">Image:</label>
     <input type="file" name="image" id="image" accept="image/*" required>
