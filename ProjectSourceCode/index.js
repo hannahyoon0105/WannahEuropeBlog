@@ -379,27 +379,6 @@ app.get('/post', function (req, res) {
   
 });
 
-//  app.post('/create-post', async (req, res) => { //post
-//   try {
-//     const body = req.body.body;
-//     const date_created = new Date();
-//     const caption = req.body.caption;
-//     const image_filepath = 'uploads/' + req.body.image;
-//     let bingo_id = null;
-//     if (req.body.bingo_id){
-//       bingo_id = req.body.bingo_id;
-//     }
-//     console.log(req.body)
-
-//     db.none('INSERT INTO posts (caption, date_created, image_filepath, bingo_id) VALUES ($1, $2, $3, $4)', [caption, date_created, image_filepath, bingo_id]);
-//     res.redirect('/blog');
-//   } catch (error) {
-//     console.error('Error creating post:', error);
-//     res.redirect('/blog');
-//   }
-// });
-
-
 app.post('/create-post', upload.single('image'), async (req, res) => {
   if (!req.file) {
     console.log("No file uploaded");
@@ -427,8 +406,6 @@ app.post('/create-post', upload.single('image'), async (req, res) => {
   res.redirect('/blog');
 });
 
-
-
 app.post('/like-post', async (req, res) => { //like
   console.log('liking post')
   try {
@@ -446,6 +423,20 @@ app.post('/like-post', async (req, res) => { //like
 
     console.error('Error liking post:', error);
     res.redirect('/home?message=Error%20liking%20post');
+  }
+});
+
+app.post('/delete-post', async (req, res) => {
+  console.log('deleting post');
+  try {
+    const { post_id } = req.body;
+    await db.none('DELETE FROM likes WHERE post_id = $1', [post_id]);
+    await db.none('DELETE FROM comments WHERE post_id = $1', [post_id]);
+    await db.none('DELETE FROM posts WHERE post_id = $1', [post_id]);
+    res.redirect('/blog?message=Post%20deleted');
+  } catch (error) {
+    console.error('Error deleting post:', error);
+    res.redirect('/blog?message=Error%20deleting%20post');
   }
 });
 

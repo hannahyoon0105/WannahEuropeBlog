@@ -157,7 +157,6 @@
                         {{/ifCond}}
                         <button class="btn" id="author-link"><strong>{{author}}</strong></button>
                 </form> 
-
             </div>   
 
             <p class="date">{{fixDate date_created}}</p>
@@ -167,39 +166,44 @@
         <div class="row">
             <div class="col-sm-8", style="padding: 0px 0px 0px 0px">
     <!-- Post Card -->
-        
-        
-        <div class="card-body" id="post-content">
+                <div class="card-body" id="post-content">
             
-            <div class="image-container">
-                <img src="{{image_filepath}}" alt="Posted Photo" id="post-photo" class="card-image-top">
-            </div>
+                    <div class="image-container">
+                        <img src="{{image_filepath}}" alt="Posted Photo" id="post-photo" class="card-image-top">
+                    </div>
             
-                <form action="/like-post" method="POST">
-                    <input type="hidden" name="post_id" value={{post_id}}> 
-                    <input type="hidden" name="username" value={{../username}}> 
-                    {{#if liked}}
-                        <button class="btn btn-link"><i id="heart" class="fa fa-heart fa-6" style="color: red; font-size:1.5em;"></i></button><span>• &nbsp;&nbsp;{{like_count}} likes</span>
-                    {{else}}
-                        <button class="btn btn-link">
-                        <i id="heart" class="far fa-heart" style="color: red;font-size:1.5em;"></i></button><span>• &nbsp;&nbsp;{{like_count}} likes</span>
-                
+                    <form action="/like-post" method="POST">
+                        <input type="hidden" name="post_id" value={{post_id}}> 
+                        <input type="hidden" name="username" value={{../username}}> 
+
+                        {{#if liked}}
+                            <button class="btn btn-link"><i id="heart" class="fa fa-heart fa-6" style="color: red; font-size:1.5em;"></i></button><span>• &nbsp;&nbsp;{{like_count}} likes</span>
+                        {{else}}
+                            <button class="btn btn-link">
+                            <i id="heart" class="far fa-heart" style="color: red;font-size:1.5em;"></i></button><span>• &nbsp;&nbsp;{{like_count}} likes</span>
+                        {{/if}}
+
+                    </form>  
+                    {{#if ../admin}}
+                        <form action="/delete-post" method="POST">
+                            <input type="hidden" name="post_id" value={{post_id}}> 
+                            <input type="hidden" name="username" value={{../username}}> 
+                            <button class="btn btn-link" style="margin-top: -5px;"><i class="fas fa-trash-alt"></i></button>
+                        </form>
                     {{/if}}
-                </form>  
-                        
-                        
+
                     <form action="/user" method="GET" clas="row">
-                    {{#ifCond ../username author }}
+                        {{#ifCond ../username author }}
                             <input type="hidden" name="self" value="true">
                         {{/ifCond}}
                         <button class="btn" id="author-link" style="margin: -4px 0px 0px 0px; padding: 0px 0px 0px 0px;"><strong>{{author}}: <span style="font-weight: normal;">{{caption}}</span></strong></button>
                         <input type="hidden" name="username" value={{author}}>
-                        <p style="margin-top: 5px;">
-                        </p>
-                    
+                            <p style="margin-top: 5px;">
+                            </p>
+                        
                     </form> 
             <!-- Like, Comment, Repost Buttons -->
-        </div>
+                </div>
             </div>
     <div class="col-sm-4", style="padding: 0px 0px 5px 0px; overflow:auto">
     <!-- Post Card -->
