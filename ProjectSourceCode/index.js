@@ -14,6 +14,7 @@ const bcrypt = require('bcrypt'); //  To hash passwords
 const axios = require('axios'); // To make HTTP requests from our server. We'll learn more about it in Part C.
 const multer = require('multer'); // used for image upload
 const fs = require('fs');
+require('dotenv').config();
 
 // *****************************************************
 // <!-- Section 2 : Connect to DB -->
@@ -202,22 +203,65 @@ else, save the user in the session variable
 
 });
 
-app.get('/home', function (req, res) {
-  // const defaultUser = {
-  //   username: "",
-  //   admin: false
-  // };
+const locationMap = new Map([
+  ['2024-07-14', ['London', 51.5074, -0.1278]],
+  ['2024-07-15', ['London', 51.5074, -0.1278]],
+  ['2024-07-16', ['Boulder', 40.015, -105.2705]],
+]);
+
+async function getWeather(date) {
+  try {
+    const city = locationMap.get(date)[0];
+    console.log(city);
+    const lat = locationMap.get(date)[1];
+    const lon = locationMap.get(date)[2];
+    const weathermapkey = process.env.OPENWEATHERMAP_API_KEY;
+    const url = `https://api.openweathermap.org/data/3.0/onecall?lat=${lat}&lon=${lon}&exclude=minutely,hourly,daily,alerts&units=imperial&appid=${weathermapkey}`;
+    const response = await axios.get(url);
+    return response.data;
+  }
+  catch (error) {
+    console.error('Error fetching weather data:', error);
+    return {error: 'Error fetching weather data'};
+}}
+
+
+
+app.get('/home', async function (req, res) {
   const username = req.session.user ? req.session.user.username : null;
-
-  // Check if req.user and req.session.user exist before trying to access their properties
   const admin = req.session.user ? req.session.user.admin : false;
+  const today = new Date().toISOString().split('T')[0];
+  const utc_time = new Date().toISOString().split('T')[1].split('.')[0];
 
-  const renderOptions = {
-    username: username, // This will be null if user is not logged in
-    admin: admin // Handle admin flag
-  };
-  res.render('pages/home', renderOptions);
+  try {
+    const weather_data = await getWeather(today);
+    const temp = weather_data.current.temp;
+    const humidity = weather_data.current.humidity;
+    const timezone_offset = weather_data.timezone_offset; // in seconds
+    const local_time = new Date(new Date().getTime() + timezone_offset * 1000).toISOString().split('T')[1].split('.')[0].split(':').slice(0, 2).join(':');
+
+
+    const renderOptions = {
+      username: username, // This will be null if user is not logged in
+      admin: admin, // Handle admin flag
+      temp: temp,
+      humidity: humidity,
+      current_city: locationMap.get(today)[0],
+      time: local_time
+    };
+
+    res.render('pages/home', renderOptions);
+  } catch (error) {
+    console.error('Error rendering home page:', error);
+    res.render('pages/home', {
+      username: username,
+      admin: admin,
+      temp: 'N/A',
+      humidity: 'N/A'
+    });
+  }
 });
+
 
 app.get('/bingo', function (req, res) {
   const username = req.session.user ? req.session.user.username : null;
