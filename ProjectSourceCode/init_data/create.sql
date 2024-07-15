@@ -16,6 +16,7 @@ CREATE TABLE bingo (
 DROP TABLE IF EXISTS posts;
 CREATE TABLE posts (
     post_id SERIAL PRIMARY KEY,
+    author VARCHAR(50) NOT NULL REFERENCES users(username),
     caption VARCHAR(200),
     date_created TIMESTAMP NOT NULL,
     bingo_id INTEGER REFERENCES bingo(item_id) NULL,

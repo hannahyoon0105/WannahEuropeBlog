@@ -42,27 +42,9 @@
         style="border-radius: 50%;">
     </div> --}}
       <div class="col text-left">
-        <h1>{{user}}</h1>
-        <p>{{followers}} followers • {{following}} following</p>
+        <h1>{{user}}'s Posts</h1>
       </div>
-      <div class="col text-left"></div>
-      <div class="col text-left"></div>
-      <div class="col text-right">
-        {{#if self}}
-        {{else if is_Followed.exists}}
-            <form action="/follow-user-u" method="POST">
-                    <input type="hidden" name="username" value={{username}}> 
-                    <input type="hidden" name="followee" value={{user}}> 
-                    <button class="follow-button followed btn btn-outline-info">Following</button>           
-            </form>
-        {{else}}
-            <form action="/follow-user-u" method="POST">
-                    <input type="hidden" name="username" value={{username}}> 
-                    <input type="hidden" name="followee" value={{user}}> 
-                    <button class="follow-button followed btn btn-info">Follow</button>         
-            </form>
-        {{/if}}
-      </div>
+    
     </div>
   </div>
 </div>
@@ -74,16 +56,11 @@
   <div class="row" style="margin: 0px;">
     {{#each posts}}
       <div class="col" style="padding-right: 0px; padding-left:0px; margin:0px">
-        <div class="card" style="width: 375px; padding:0px; margin:10px;">
+        <div class="card" style="width: 250px; padding:0px; margin:8px;">
           <div class="container" style="margin: 0px;">
             <div class="row justify-content-center">
-                  <img src={{this.image_url}} class="card-img-top" width="300px" height="280px" style="padding:10px;">
+                  <img src={{this.image_filepath}} class="card-img-top" width="300px" height="250px" style="padding:3px;">
             </div>
-          </div>
-          <div class="card-body">
-            <h3><a href="./recipe?recipe_id={{this.recipe_id}}" style="color: black">{{this.title}}</a></h3>
-            <p>{{this.caption}}</p>
-            <!-- Add other recipe details as needed -->
           </div>
         </div>
       </div>
