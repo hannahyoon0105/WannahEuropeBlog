@@ -338,6 +338,7 @@ app.get('/blog', function (req, res) {
     ) AS liked,
     json_agg(
         json_build_object(
+            'comment_id', c.comment_id,
             'username', c.username, 
             'body', c.body, 
             'date_created', c.date_created,
@@ -364,6 +365,7 @@ app.get('/blog', function (req, res) {
         username: username, // This will be null if user is not logged in
         admin: req.session.user ? req.session.user.admin : false // Handle admin flag
       };
+      console.log(renderOptions);
       res.render('pages/blog', renderOptions);
     })
     .catch(err => {
@@ -543,6 +545,19 @@ app.post('/comment-post', function (req, res) {
     });
 });
 
+
+app.post('/delete-comment', async (req, res) => {
+  console.log('deleting comment');
+  try {
+    const comment_id = req.body.comment_id;
+    await db.none('DELETE FROM comments WHERE comment_id = $1', [comment_id]);
+    res.redirect('/blog?message=Comment%20deleted');
+  } catch (error) {
+    console.error('Error deleting comment:', error);
+    res.redirect('/blog?message=Error%20deleting%20comment');
+  }
+});
+
 app.post('/cench', function (req, res) {
   if (cench=="Nah fam"){
     cench = "YES";
@@ -554,6 +569,8 @@ app.post('/cench', function (req, res) {
   }
   res.redirect('/home');
 });
+
+
 
 app.get('/logout', (req, res) => {
   req.session.destroy();
