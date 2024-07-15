@@ -118,7 +118,7 @@ const upload = multer({ storage });
 // *****************************************************
 // <!-- Section 4 : API Routes -->
 // *****************************************************
-
+let cench = "Nah fam";
 // TODO - Include your API routes here
 app.get('/welcome', (req, res) => {
   res.json({status: 'success', message: 'Welcome!'});
@@ -254,7 +254,6 @@ async function getWeather(date) {
 }}
 
 
-
 app.get('/home', async function (req, res) {
   const username = req.session.user ? req.session.user.username : null;
   const admin = req.session.user ? req.session.user.admin : false;
@@ -267,7 +266,14 @@ app.get('/home', async function (req, res) {
     const humidity = weather_data.current.humidity;
     const timezone_offset = weather_data.timezone_offset; // in seconds
     const local_time = new Date(new Date().getTime() + timezone_offset * 1000).toISOString().split('T')[1].split('.')[0].split(':').slice(0, 2).join(':');
+    
+    //change to normal format time
+    let [hours, minutes] = local_time.split(':');
 
+    hours = parseInt(hours, 10);
+    minutes = parseInt(minutes, 10);
+    let period = (hours >= 12) ? ' PM' : ' AM';
+    let normaltime = ((hours + 11) % 12 + 1) + ':' + (minutes < 10 ? '0' : '') + minutes + period;
 
     const renderOptions = {
       username: username, // This will be null if user is not logged in
@@ -275,7 +281,8 @@ app.get('/home', async function (req, res) {
       temp: temp,
       humidity: humidity,
       current_city: locationMap.get(today)[0],
-      time: local_time
+      time: normaltime, 
+      cench: cench
     };
 
     res.render('pages/home', renderOptions);
@@ -285,7 +292,9 @@ app.get('/home', async function (req, res) {
       username: username,
       admin: admin,
       temp: 'N/A',
-      humidity: 'N/A'
+      humidity: 'N/A',
+      cench: cench
+      
     });
   }
 });
@@ -487,11 +496,11 @@ app.post('/like-post', async (req, res) => { //like
     const existingLike = await db.oneOrNone('SELECT * FROM likes WHERE post_id = $1 AND username = $2', [post_id, username]);
     if (existingLike) {
       await db.none('DELETE FROM likes WHERE post_id = $1 AND username = $2', [post_id, username]);
-      res.redirect('/blog?message=Like%20removed');
+      res.redirect('/blog');
     } else {
       console.log('this should be printed')
       await db.none('INSERT INTO likes (post_id, username) VALUES ($1, $2)', [post_id, username]);
-      res.redirect('/blog?message=Post%20liked');
+      res.redirect('/blog');
     }
   } catch (error) {
 
@@ -526,14 +535,25 @@ app.post('/comment-post', function (req, res) {
   ])
     .then(function (data) {
       // console.log(data)
-      res.redirect('/blog?message=Comment%20posted');
+      res.redirect('/blog');
     })
     .catch(function (err) {
       console.error('Error commenting on post:', err);
-      res.redirect('/blog?message=Comment%20posted');
+      res.redirect('/blog');
     });
 });
 
+app.post('/cench', function (req, res) {
+  if (cench=="Nah fam"){
+    cench = "YES";
+  }
+  
+  else{
+    console.log("????")
+    cench = "Nah fam";
+  }
+  res.redirect('/home');
+});
 
 app.get('/logout', (req, res) => {
   req.session.destroy();

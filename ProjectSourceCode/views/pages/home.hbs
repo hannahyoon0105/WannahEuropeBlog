@@ -1,68 +1,103 @@
-<div class="container-fluid">
-    <div class="row">
-      <div class="col-md-3">
-        <div class="card border-right text-center">
-          <div class="card-header">Weather and Time</div>
-          <div class="card-body">
-            Current City: {{current_city}}
-            <br/>
-            Temperature: {{temp}}º F
-            <br/>
-            Humidity: {{humidity}}%
-            <br/>
-            Local Time: {{time}}
-
-          </div>
-        </div>
-      </div>
-      <div class="col-md-6">
-        <div class="card border-left border-right text-center">
-          <div class="card-header">Site Overview</div>
-          <div class="card-body">Welcome to Wes and Hannah’s Europe Vacation Blog! Over the next month, we will be traveling to various countries in Western Europe. This website will document our visit and hopefully keep you up to date on our travels. To see our posts, click on the Blog tab!
-
-This website is developed for desktop use only; please refrain from viewing on a mobile device :) 
+<br>
+<div class="container-fluid" style="margin: 0 auto; text-align: center; padding=10px;">
+  <h1>Wes & Hannah's 2024 Summer Travel Blog</h1>
 </div>
-        </div>
-      </div>
-      <div class="col-md-3">
-        <div class="card border-left text-center">
-          <div class="card-header">Trip Progression</div>
-          <div class="card-body">
-            <div class="timeline">
-                <div class="city" id="London">London</div>
-                <div class="line"></div>
-                <div class="city" id="Amsterdam">Amsterdam</div>
-                <div class="line"></div>
-                <div class="city" id="Venice">Venice</div>
-                <div class="line"></div>
-                <div class="city" id="Florence">Florence</div>
-                <div class="line"></div>
-                <div class="city" id="Rome">Rome</div>
-                <div class="line"></div>
-                <div class="city" id="Naples">Naples</div>
-                <div class="line"></div>
-                <div class="city" id="Santorini">Santorini</div>
-                <div class="line"></div>
-                <div class="city" id="Paris">Paris</div>
+<br>
+
+
+<div class="container-fluid" style="margin: 0 auto;">
+  <div class="row">
+
+    <div class="col-sm-1">
+    </div>
+
+    <div class="col-sm-10">
+      <div class="container-fluid" style="margin: 0 auto;">
+        <div class="row">
+          <div class="col-md-3">
+            <div class="card text-center">
+              <div class="card-header">Where We Are Right Now!</div>
+              <div class="card-body">
+                We are currently in: <br>
+                <strong style="font-size:x-large">{{current_city}}</strong>
+                <br/><br>
+                Local Time: <br><strong style="font-size:x-large">{{time}}</strong>
+                <br/><br>
+                Temperature: <br><strong style="font-size:x-large">{{temp}}º F</strong>
+                <br/><br>
+                Humidity: <br><strong style="font-size:x-large">{{humidity}}%</strong>
+              </div>
+            </div>
+
+            <br>
+
+            <div class="card text-center">
+              <div class="card-header">Has Hannah Seen Central Cee Yet?
+              </div>
+              <div class="card-body">
+                {{cench}}
+              </div>
             </div>
           </div>
-        </div>
-      </div>
-    </div>
+          <div class="col-md-6">
+            <div class="card mb-3">
+              <div class="container" style="width: 100%; height: 350px; overflow: hidden; padding:0px; align-items: center;">
+              <img class="card-img-top" src="./resources/homepicture.png" alt="Card image cap">
+              </div>
+              <div class="card-body">
+                <p class="card-text">Welcome to Wes and Hannah’s Europe Vacation Blog! Over the next month, we will be traveling to various countries across Europe. We created this website to document our visit and hopefully keep you up to date on our travels. To see our posts, explore our <a href="/blog">Blog</a>! <br><br>
+                This website is developed for desktop use only; please refrain from viewing on a mobile device :)</p>
+                
+              </div>
+            </div>
+            
+          </div>
+          <div class="col-md-3">
+            <div class="card text-center">
+              <div class="card-header">Travel Plan</div>
+              <div class="card-body">
+                <div class="timeline">
+                    <div class="city" id="London">London</div>
+                    <div class="line"></div>
+                    <div class="city" id="Amsterdam">Amsterdam</div>
+                    <div class="line"></div>
+                    <div class="city" id="Venice">Venice</div>
+                    <div class="line"></div>
+                    <div class="city" id="Florence">Florence</div>
+                    <div class="line"></div>
+                    <div class="city" id="Rome">Rome</div>
+                    <div class="line"></div>
+                    <div class="city" id="Naples">Naples</div>
+                    <div class="line"></div>
+                    <div class="city" id="Santorini">Santorini</div>
+                    <div class="line"></div>
+                    <div class="city" id="Paris">Paris</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div> 
+      </div> 
+    </div> 
+    
+    <div class="col-sm-1">
+    </div>  
+
   </div>
+</div>
 
 
 <script>
         // Define your trip schedule with dates and cities
         const tripSchedule = [
-            { city: "London", date_visit: "2024-07-01", date_leave: "2024-07-02" },
-            { city: "Amsterdam", date_visit: "2024-07-03", date_leave: "2024-07-04" },
-            { city: "Venice", date_visit: "2024-07-05", date_leave: "2024-07-06" },
-            { city: "Florence", date_visit: "2024-07-07", date_leave: "2024-07-08" },
-            { city: "Rome", date_visit: "2024-07-09", date_leave: "2024-07-10" },
-            { city: "Naples", date_visit: "2024-07-13", date_leave: "2024-07-16" },
-            { city: "Santorini", date_visit: "2024-07-19", date_leave: "2024-07-21" },
-            { city: "Paris", date_visit: "2024-07-22", date_leave: "2024-07-24" }
+            { city: "London", date_visit: "2024-07-17", date_leave: "2024-07-20" },
+            { city: "Amsterdam", date_visit: "2024-07-21", date_leave: "2024-07-23" },
+            { city: "Venice", date_visit: "2024-07-24", date_leave: "2024-07-26" },
+            { city: "Florence", date_visit: "2024-07-27", date_leave: "2024-07-29" },
+            { city: "Rome", date_visit: "2024-07-30", date_leave: "2024-08-01" },
+            { city: "Naples", date_visit: "2024-08-02", date_leave: "2024-08-04" },
+            { city: "Santorini", date_visit: "2024-08-05", date_leave: "2024-08-08" },
+            { city: "Paris", date_visit: "2024-08-09", date_leave: "2024-08-13" }
         ];
 
         // Function to update city colors based on the current date
@@ -83,4 +118,4 @@ This website is developed for desktop use only; please refrain from viewing on a
 
         // Call the function on page load
         window.onload = updateCityColors;
-    </script>
+</script>
