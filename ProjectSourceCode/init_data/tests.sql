@@ -2,13 +2,14 @@ INSERT INTO users (username, password, admin)
 VALUES 
     ('WesAllen01', '$2b$10$eJZUppv4v9r0oSGkTWyuSuiBOFtlZXOSTQdx7C10oBFt38FUKJOta', true),
     ('hannah', '$2b$10$CHVk3ob/GMGtDISadesLeOnlG4LjnH.NygVmbaDQY4zvf98.RUS46', true),
+    ('wannah', '$2b$10$CHVk3ob/GMGtDISadesLeOnlG4LjnH.NygVmbaDQY4zvf98.RUS46', true),
     ('duncan', '$2b$10$i.eCPpWl.qxqjPPdlpdShujDSnP3iTyQ3hZePbyrbs6PU2af/5aAS', false);
 
-INSERT INTO posts (caption, date_created, bingo_id, image_filepath)
+INSERT INTO posts (caption, author, date_created, bingo_id, image_filepath)
 VALUES 
-    ('This is a test post', '2021-04-01 12:00:00', NULL, '/resources/xina.jpg'),
-    ('This is another test post', '2021-04-01 12:00:00', NULL , 'https://www.cu.edu/sites/default/files/2023_cu_home_bldr-chancellor.jpg'),
-    ('This is a third test post', '2021-04-01 12:00:00', NULL , 'https://www.cu.edu/sites/default/files/2023_cu_home_bldr-chancellor.jpg');
+    ('This is a test post', 'wannah', '2021-04-01 12:00:00', NULL, '/resources/xina.jpg'),
+    ('This is another test post', 'wannah', '2021-04-01 12:00:00', NULL , 'https://www.cu.edu/sites/default/files/2023_cu_home_bldr-chancellor.jpg'),
+    ('This is a third test post', 'wannah', '2021-04-01 12:00:00', NULL , 'https://www.cu.edu/sites/default/files/2023_cu_home_bldr-chancellor.jpg');
 
 INSERT INTO likes (post_id, username)
 VALUES 
@@ -44,7 +45,7 @@ VALUES
     ('Wait for something longer than a hour and find it is worth it', false),
     ('Struggle to find a public bathroom', false),
     ('Meet someone else from Colorado', false),
-    ('It gets unbearably inesapably hot', false),
+    ('It gets unbearably inescapably hot', false),
     ('Misplace something important', false),
     ('Have the best we have ever had in our entire lves', false),
     ('Miss a train station', false);

@@ -42,11 +42,7 @@
       <ul class="navbar-nav ml-auto">
           <li class="nav-item">
             {{#if username}}
-              <form action="/user" method="GET">
-                    <input type="hidden" name="username" value={{username}}>
-                    <input type="hidden" name="self" value="true">
-                    <button class="btn btn-sm">{{username}}</button>
-            </form> 
+              <a>{{username}} <3</a>
             {{/if}}
               
           </li>

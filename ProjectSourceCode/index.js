@@ -293,7 +293,6 @@ app.get('/home', async function (req, res) {
 
 app.get('/bingo', function (req, res) {
   const username = req.session.user ? req.session.user.username : null;
-
   const admin = req.session.user ? req.session.user.admin : false;
 
   db.any('SELECT * FROM bingo ORDER BY item_id;')
@@ -320,6 +319,7 @@ app.get('/blog', function (req, res) {
   db.any(`
   SELECT 
     p.post_id,
+    p.author,
     p.caption, 
     p.date_created, 
     p.image_filepath,
@@ -368,14 +368,15 @@ app.get('/blog', function (req, res) {
 
 app.get('/user', function(req,res) {
   res.header('Cache-Control', 'no-store, no-cache, must-revalidate, private');
+  const username = req.session.user ? req.session.user.username : null;
+  const admin = req.session.user ? req.session.user.admin : false;
+
   const user_query = `SELECT *
   FROM users
   WHERE username = '${req.query.username}';`;
   
   const post_query = `SELECT *
   FROM posts
-  INNER JOIN recipes
-  ON posts.recipe_id = recipes.recipe_id
   WHERE posts.author = '${req.query.username}'
   ORDER BY posts.date_created DESC;
   `;
@@ -391,8 +392,8 @@ app.get('/user', function(req,res) {
     res.render('pages/user', 
     {user: userdata[0][0].username, 
       posts: userdata[1],
-      username: req.session.user.username,
-      admin: req.session.user.admin,
+      username: username,
+      admin: admin,
       self: req.query.self,
       message: req.query.message
       });
@@ -457,6 +458,7 @@ app.post('/create-post', upload.single('image'), async (req, res) => {
     return res.status(400).send('No file uploaded.');
   }
   const caption = req.body.caption; // Assuming you have a caption field in your form
+  const author = req.session.user.username;
   const imageFilename = 'uploads/' + req.file.filename; // Accessing the filename of the uploaded file
   const date_created = new Date();
   let bingo_id = req.body.bingo_id;
@@ -468,7 +470,7 @@ app.post('/create-post', upload.single('image'), async (req, res) => {
 
   // Example: Insert into database (pseudo code)
   // await db.insert('posts', { caption, imageFilename });
-  db.none('INSERT INTO posts (caption, date_created, image_filepath, bingo_id) VALUES ($1, $2, $3, $4)', [caption, date_created, imageFilename, bingo_id]);
+  db.none('INSERT INTO posts (caption, author, date_created, image_filepath, bingo_id) VALUES ($1, $2, $3, $4, $5)', [caption, author, date_created, imageFilename, bingo_id]);
   if (bingo_id){
     db.none('UPDATE bingo SET completed = true WHERE item_id = $1', [bingo_id]);
   }
