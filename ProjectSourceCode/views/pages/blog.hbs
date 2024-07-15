@@ -186,7 +186,10 @@
 
                     </form> 
                     {{else}}
-                        <i id="heart" class="far fa-heart" style="color: red;font-size:1.5em;"></i></button><span> &nbsp;&nbsp;{{like_count}} likes</span>
+                        <div class="container" style="margin-bottom: 10px;">
+                        <i id="heart" class="far fa-heart" style="color: red;font-size:1.5em;"></i></button><span>&nbsp;&nbsp;• &nbsp;&nbsp;{{like_count}} likes</span>
+                        </div>
+                        
                     {{/if}} 
                     {{#if ../admin}}
                         <form action="/delete-post" method="POST">
