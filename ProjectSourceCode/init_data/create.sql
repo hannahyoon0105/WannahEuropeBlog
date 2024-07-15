@@ -17,7 +17,7 @@ DROP TABLE IF EXISTS posts;
 CREATE TABLE posts (
     post_id SERIAL PRIMARY KEY,
     author VARCHAR(50) NOT NULL REFERENCES users(username),
-    caption VARCHAR(200),
+    caption VARCHAR(2000),
     date_created TIMESTAMP NOT NULL,
     bingo_id INTEGER REFERENCES bingo(item_id) NULL,
     image_filepath VARCHAR(2000) NOT NULL

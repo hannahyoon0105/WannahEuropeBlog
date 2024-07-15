@@ -171,7 +171,8 @@
                     <div class="image-container">
                         <img src="{{image_filepath}}" alt="Posted Photo" id="post-photo" class="card-image-top">
                     </div>
-            
+                    <div class="container" style="padding:0;">
+                    {{#if ../username}}
                     <form action="/like-post" method="POST">
                         <input type="hidden" name="post_id" value={{post_id}}> 
                         <input type="hidden" name="username" value={{../username}}> 
@@ -183,7 +184,10 @@
                             <i id="heart" class="far fa-heart" style="color: red;font-size:1.5em;"></i></button><span>• &nbsp;&nbsp;{{like_count}} likes</span>
                         {{/if}}
 
-                    </form>  
+                    </form> 
+                    {{else}}
+                        <i id="heart" class="far fa-heart" style="color: red;font-size:1.5em;"></i></button><span> &nbsp;&nbsp;{{like_count}} likes</span>
+                    {{/if}} 
                     {{#if ../admin}}
                         <form action="/delete-post" method="POST">
                             <input type="hidden" name="post_id" value={{post_id}}> 
@@ -191,17 +195,20 @@
                             <button class="btn btn-link" style="margin-top: -5px;"><i class="fas fa-trash-alt"></i></button>
                         </form>
                     {{/if}}
-
-                    <form action="/user" method="GET" clas="row">
+                    <div class="container" style="margin:0px 10px 0px 10px">
+                    <form action="/user" method="GET" class="row">
                         {{#ifCond ../username author }}
                             <input type="hidden" name="self" value="true">
                         {{/ifCond}}
-                        <button class="btn" id="author-link" style="margin: -4px 0px 0px 0px; padding: 0px 0px 0px 0px;"><strong>{{author}}: <span style="font-weight: normal;">{{caption}}</span></strong></button>
+                        <p><button class="btn" id="author-link" style="margin: 0; padding: 0; display: inline-block; border: 0px; vertical-align:top;"><strong>{{author}}:</strong></button><span style="font-weight: normal; text-align: left;"> {{caption}}</span></p>
                         <input type="hidden" name="username" value={{author}}>
                             <p style="margin-top: 5px;">
                             </p>
                         
-                    </form> 
+                    </form>
+                    </div> 
+                    </div>
+                    
             <!-- Like, Comment, Repost Buttons -->
                 </div>
             </div>
@@ -220,14 +227,22 @@
             {{/each}}
   
         </div>
+        
+        {{#if ../username}}
         <br>
         <form action="/comment-post" method="POST">
-                    <input type="hidden" name="post_id" value={{post_id}}> 
-                    <input type="hidden" name="username" value={{../username}}> 
-                    <input type="text" id="comment" name="comment" required placeholder="Add comment...">    
-                           
-                    <button class="btn btn-info btn-sm" style="margin-top: -3px;"><strong>Post</strong></button>                
-            </form> 
+            <input type="hidden" name="post_id" value={{post_id}}> 
+            <input type="hidden" name="username" value={{../username}}> 
+            <input type="text" id="comment" name="comment" required placeholder="Add comment...">    
+                    
+            <button class="btn btn-info btn-sm" style="margin-top: -3px;"><strong>Post</strong></button>                
+        </form>
+        {{else}}
+    
+            <input type="text" id="comment" name="comment" required placeholder="Login to comment...">                 
+            <button class="btn btn-info btn-sm" style="margin-bottom: 3px;"><strong>Post</strong></button>
+        {{/if}}
+
     </div>
     </div>
     </div>
