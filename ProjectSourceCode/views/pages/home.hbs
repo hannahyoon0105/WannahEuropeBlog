@@ -18,15 +18,69 @@
       <div class="col-md-6">
         <div class="card border-left border-right text-center">
           <div class="card-header">Site Overview</div>
-          <div class="card-body">CLorem ipsum dolor sit amet, consectetur adipiscing elit. Integer nec odio. Praesent libero. Sed cursus ante dapibus diam. Sed nisi. Nulla quis sem at nibh elementum imperdiet. Duis sagittis ipsum. Praesent mauris. Fusce nec tellus sed augue semper porta. Mauris massa. Vestibulum lacinia arcu eget nulla. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos. Curabitur sodales ligula in libero. Sed dignissim lacinia nunc.
+          <div class="card-body">Welcome to Wes and Hannah’s Europe Vacation Blog! Over the next month, we will be traveling to various countries in Western Europe. This website will document our visit and hopefully keep you up to date on our travels. To see our posts, click on the Blog tab!
+
+This website is developed for desktop use only; please refrain from viewing on a mobile device :) 
 </div>
         </div>
       </div>
       <div class="col-md-3">
         <div class="card border-left text-center">
           <div class="card-header">Trip Progression</div>
-          <div class="card-body">Content for panel 3</div>
+          <div class="card-body">
+            <div class="timeline">
+                <div class="city" id="London">London</div>
+                <div class="line"></div>
+                <div class="city" id="Amsterdam">Amsterdam</div>
+                <div class="line"></div>
+                <div class="city" id="Venice">Venice</div>
+                <div class="line"></div>
+                <div class="city" id="Florence">Florence</div>
+                <div class="line"></div>
+                <div class="city" id="Rome">Rome</div>
+                <div class="line"></div>
+                <div class="city" id="Naples">Naples</div>
+                <div class="line"></div>
+                <div class="city" id="Santorini">Santorini</div>
+                <div class="line"></div>
+                <div class="city" id="Paris">Paris</div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
   </div>
+
+
+<script>
+        // Define your trip schedule with dates and cities
+        const tripSchedule = [
+            { city: "London", date_visit: "2024-07-01", date_leave: "2024-07-02" },
+            { city: "Amsterdam", date_visit: "2024-07-03", date_leave: "2024-07-04" },
+            { city: "Venice", date_visit: "2024-07-05", date_leave: "2024-07-06" },
+            { city: "Florence", date_visit: "2024-07-07", date_leave: "2024-07-08" },
+            { city: "Rome", date_visit: "2024-07-09", date_leave: "2024-07-10" },
+            { city: "Naples", date_visit: "2024-07-13", date_leave: "2024-07-16" },
+            { city: "Santorini", date_visit: "2024-07-19", date_leave: "2024-07-21" },
+            { city: "Paris", date_visit: "2024-07-22", date_leave: "2024-07-24" }
+        ];
+
+        // Function to update city colors based on the current date
+        function updateCityColors() {
+            const today = new Date();
+            console.log(today);
+            tripSchedule.forEach(schedule => {
+                const cityElement = document.getElementById(schedule.city);
+                if (new Date(schedule.date_visit) < today && new Date(schedule.date_leave) < today){
+                    cityElement.classList.add("visited");
+                }
+                else if (new Date(schedule.date_visit) <= today && new Date(schedule.date_leave) >= today) {
+                    cityElement.classList.add("current");
+                }
+
+            });
+        }
+
+        // Call the function on page load
+        window.onload = updateCityColors;
+    </script>

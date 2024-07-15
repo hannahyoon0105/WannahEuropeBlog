@@ -44,3 +44,42 @@
   .border-right {
     border-right: 1px solid #000;
   }
+
+
+  .timeline {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.city {
+    padding: 10px 20px;
+    background-color: #ccc;
+    border-radius: 5px;
+    margin: 10px 0;
+    width: 150px;
+    text-align: center;
+}
+
+.line {
+    width: 2px;
+    height: 20px;
+    background-color: #000;
+}
+
+.city.visited {
+    background-color: #14a2b8;
+    opacity: 0.3;
+    color: black;
+}
+
+
+.city.current {
+    background-color: #14a2b8;
+    color: white;
+}
+
+.city.upcoming {
+    background-color: #c72323;
+    color: black;
+}
