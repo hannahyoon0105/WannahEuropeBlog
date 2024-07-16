@@ -579,11 +579,11 @@ app.post('/like-post', async (req, res) => { //like
     const existingLike = await db.oneOrNone('SELECT * FROM likes WHERE post_id = $1 AND username = $2', [post_id, username]);
     if (existingLike) {
       await db.none('DELETE FROM likes WHERE post_id = $1 AND username = $2', [post_id, username]);
-      res.redirect('/blog');
+      res.redirect(`/blog?post_id=${post_id}`);
     } else {
       console.log('this should be printed')
       await db.none('INSERT INTO likes (post_id, username) VALUES ($1, $2)', [post_id, username]);
-      res.redirect('/blog');
+      res.redirect(`/blog?post_id=${post_id}`);
     }
   } catch (error) {
 
@@ -620,7 +620,7 @@ app.post('/comment-post', function (req, res) {
   ])
     .then(function (data) {
       // console.log(data)
-      res.redirect('/blog');
+      res.redirect(`/blog?post_id=${req.body.post_id}`);
     })
     .catch(function (err) {
       console.error('Error commenting on post:', err);
@@ -634,7 +634,7 @@ app.post('/delete-comment', async (req, res) => {
   try {
     const comment_id = req.body.comment_id;
     await db.none('DELETE FROM comments WHERE comment_id = $1', [comment_id]);
-    res.redirect('/blog?message=Comment%20deleted');
+    res.redirect(`/blog?message=Comment%20deleted&post_id=${req.body.post_id}`);
   } catch (error) {
     console.error('Error deleting comment:', error);
     res.redirect('/blog?message=Error%20deleting%20comment');
