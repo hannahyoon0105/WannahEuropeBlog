@@ -5,11 +5,18 @@ VALUES
     ('wannah', '$2b$10$CHVk3ob/GMGtDISadesLeOnlG4LjnH.NygVmbaDQY4zvf98.RUS46', true),
     ('duncan', '$2b$10$i.eCPpWl.qxqjPPdlpdShujDSnP3iTyQ3hZePbyrbs6PU2af/5aAS', false);
 
-INSERT INTO posts (caption, author, date_created, bingo_id, image_filepath)
+INSERT INTO posts (caption, author, date_created, bingo_id)
 VALUES 
-    ('This is a test post', 'wannah', '2021-04-01 12:00:00', NULL, '/resources/xina.jpg'),
-    ('This is another test post', 'wannah', '2021-04-01 12:00:00', NULL , 'https://www.cu.edu/sites/default/files/2023_cu_home_bldr-chancellor.jpg'),
-    ('This is a third test post', 'wannah', '2021-04-01 12:00:00', NULL , 'https://www.cu.edu/sites/default/files/2023_cu_home_bldr-chancellor.jpg');
+    ('This is a test post', 'wannah', '2021-04-01 12:00:00', NULL),
+    ('This is another test post', 'wannah', '2021-04-01 12:00:00', NULL ),
+    ('This is a third test post', 'wannah', '2021-04-01 12:00:00', NULL);
+
+INSERT INTO images (post_id, filepath)
+VALUES 
+    (1, '/resources/xina.jpg'),
+    (2, '/resources/xina.jpg'),
+    (2, 'https://www.cu.edu/sites/default/files/2023_cu_home_bldr-chancellor.jpg'),
+    (3, 'https://www.cu.edu/sites/default/files/2023_cu_home_bldr-chancellor.jpg');
 
 INSERT INTO likes (post_id, username)
 VALUES 
@@ -22,30 +29,30 @@ VALUES
     (3, 'duncan');
 
 
-INSERT INTO bingo (body, completed)
+INSERT INTO bingo (body, completed, post_id)
 VALUES 
-    ('Get pickpocketed', false),
-    ('Get scammed', false),
-    ('Evade a scam', false),
-    ('Have an ', false),
-    ('Get made fun of for our American accent', false),
-    ('See a celebrity', false),
-    ('Ride a gondola', false),
-    ('Get lawst', false),
-    ('Cancel plans to take a nap', false),
-    ('Have an annoying hostelmate', false),
-    ('Meet some new friends', false),
-    ('Enjoy an aperitivo', false),
-    ('Order in italian successfully', false),
-    ('See the Eiffel Tower sparkle', false),
-    ('Someone tries to sell us drugs', false),
-    ('Something goes unbelievably wrong', false),
-    ('Something goes unbelievably right', false),
-    ('Decide something is helllaaa overrated', false),
-    ('Wait for something longer than a hour and find it is worth it', false),
-    ('Struggle to find a public bathroom', false),
-    ('Meet someone else from Colorado', false),
-    ('It gets unbearably inescapably hot', false),
-    ('Misplace something important', false),
-    ('Have the best we have ever had in our entire lves', false),
-    ('Miss a train station', false);
+    ('Get pickpocketed', false, NULL),
+    ('Get scammed', false, NULL),
+    ('Evade a scam', false, NULL),
+    ('Have an ', false, NULL),
+    ('Get made fun of for our American accent', false, NULL),
+    ('See a celebrity', false, NULL),
+    ('Ride a gondola', false, NULL),
+    ('Get lawst', false, NULL),
+    ('Cancel plans to take a nap', false, NULL),
+    ('Have an annoying hostelmate', false, NULL),
+    ('Meet some new friends', false, NULL),
+    ('Enjoy an aperitivo', false, NULL),
+    ('Order in italian successfully', false, NULL),
+    ('See the Eiffel Tower sparkle', false, NULL),
+    ('Someone tries to sell us drugs', false, NULL),
+    ('Something goes unbelievably wrong', false, NULL),
+    ('Something goes unbelievably right', false, NULL),
+    ('Decide something is helllaaa overrated', false, NULL),
+    ('Wait for something longer than a hour and find it is worth it', false, NULL),
+    ('Struggle to find a public bathroom', false, NULL),
+    ('Meet someone else from Colorado', false, NULL),
+    ('It gets unbearably inescapably hot', false, NULL),
+    ('Misplace something important', false, NULL),
+    ('Have the best we have ever had in our entire lves', false, NULL),
+    ('Miss a train station', false, NULL);

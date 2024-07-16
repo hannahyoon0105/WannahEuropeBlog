@@ -9,9 +9,18 @@
     </div>
     <div class="bingo-board">
         {{#each bingo_data}}
-            <div class="bingo-cell {{#if this.completed}}completed{{/if}}">
+            {{!-- <div class="bingo-cell {{#if this.completed}}completed{{/if}}">
                 <h2>{{this.body}}</h2>
-            </div>
+            </div> --}}
+            {{#if this.completed}}
+                <a href="/blog?post_id={{this.post_id}}" class="bingo-cell completed">
+                    <h2>{{this.body}}</h2>
+                </a>
+            {{else}}
+                <div class="bingo-cell">
+                    <h2>{{this.body}}</h2>
+                </div>
+            {{/if}}
         {{/each}}
     </div>
 </div>

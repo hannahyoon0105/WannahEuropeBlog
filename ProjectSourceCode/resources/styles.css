@@ -91,3 +91,17 @@
     background-color: #c72323;
     color: black;
 }
+
+.image-wrapper {
+    width: 380px;
+    height: 380px;
+    justify-content: center;
+}
+
+.image-wrapper img {
+    overflow: hidden;
+}
+
+.carousel-control-next {
+    right: 120px;
+}
