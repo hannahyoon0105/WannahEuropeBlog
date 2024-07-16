@@ -15,8 +15,8 @@
             </div> --}}
             {{#if this.completed}}
                 <a href="/blog?post_id={{this.post_id}}" class="bingo-cell completed">
-                    <h2>✓ {{this.body}}</h2>
-                </a>
+                    <h2>✓ <strong>{{this.body}}</strong></h2>
+                </a> 
             {{else}}
                 <div class="bingo-cell">
                     <h2>{{this.body}}</h2>

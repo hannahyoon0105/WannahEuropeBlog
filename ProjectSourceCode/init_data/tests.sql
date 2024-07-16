@@ -5,29 +5,6 @@ VALUES
     ('wannah', '$2b$10$CHVk3ob/GMGtDISadesLeOnlG4LjnH.NygVmbaDQY4zvf98.RUS46', true),
     ('duncan', '$2b$10$i.eCPpWl.qxqjPPdlpdShujDSnP3iTyQ3hZePbyrbs6PU2af/5aAS', false);
 
-INSERT INTO posts (caption, author, date_created, bingo_id)
-VALUES 
-    ('This is a test post', 'wannah', '2021-04-01 12:00:00', NULL),
-    ('This is another test post', 'wannah', '2021-04-01 12:00:00', NULL ),
-    ('This is a third test post', 'wannah', '2021-04-01 12:00:00', NULL);
-
-INSERT INTO images (post_id, filepath)
-VALUES 
-    (1, '/resources/xina.jpg'),
-    (2, '/resources/xina.jpg'),
-    (2, 'https://www.cu.edu/sites/default/files/2023_cu_home_bldr-chancellor.jpg'),
-    (3, 'https://www.cu.edu/sites/default/files/2023_cu_home_bldr-chancellor.jpg');
-
-INSERT INTO likes (post_id, username)
-VALUES 
-    (1, 'WesAllen01'),
-    (1, 'duncan'),
-    (2, 'duncan'),
-    (2, 'hannah'),
-    (3, 'WesAllen01'),
-    (3, 'hannah'),
-    (3, 'duncan');
-
 
 INSERT INTO bingo (body, completed, post_id)
 VALUES 

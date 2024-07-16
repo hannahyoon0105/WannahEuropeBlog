@@ -604,7 +604,7 @@ app.post('/delete-post', async (req, res) => {
     res.redirect('/blog?message=Post%20deleted');
   } catch (error) {
     console.error('Error deleting post:', error);
-    res.redirect('/blog?message=Error%20deleting%20post');
+    res.redirect('/blog?message=Error%20deleting%20post'); 
   }
 });
 
