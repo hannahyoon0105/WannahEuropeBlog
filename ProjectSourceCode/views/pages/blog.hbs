@@ -147,7 +147,7 @@
     <p>{{> message}}</p>
     {{#each posts}}
     
-    <div class="post-card">
+    <div class="post-card" id="post-{{post_id}}">
         <div class="post-header">
             <div class="row" style="padding-left: 20px;">
                 <form action="/user" method="GET">
@@ -168,8 +168,24 @@
     <!-- Post Card -->
                 <div class="card-body" id="post-content">
             
-                    <div class="image-container" style="overflow: hidden;">
-                        <img src="{{image_filepath}}" alt="Posted Photo" id="post-photo" class="card-image-top">
+                <div id="carousel-{{post_id}}" class="carousel slide" data-ride="carousel">
+                    <div class="carousel-inner">
+                        {{#each images}}
+                        <div class="carousel-item {{#if @first}}active{{/if}} image-wrapper">
+
+                                <img src="{{this.filepath}}" class="d-block w-100" alt="Posted Photo">
+
+                        </div>
+                        {{/each}}
+                    </div>
+                    <a class="carousel-control-prev" href="#carousel-{{post_id}}" role="button" data-slide="prev">
+                        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                        <span class="sr-only">Previous</span>
+                    </a>
+                    <a class="carousel-control-next" href="#carousel-{{post_id}}" role="button" data-slide="next">
+                        <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                        <span class="sr-only">Next</span>
+                    </a>
                     </div>
                     <br>
                     <div class="container" style="padding:0;">
@@ -297,4 +313,19 @@
     {{/each}}
 </div>
 
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        console.log("here wesley look here");
+        const params = new URLSearchParams(window.location.search);
+        console.log(params.get('post_id'));
+        const post_id = params.get('post_id');
+        if (post_id) {
+            console.log("working so far HAKJDFHSIKFHA")
+            const postElement = document.getElementById(`post-${post_id}`);
+            if (postElement) {
+                postElement.scrollIntoView({behavior: "smooth"});
+            }
+        }
+    });
 
+</script>

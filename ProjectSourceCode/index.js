@@ -136,7 +136,7 @@ app.get('/', function (req, res) {
   const admin = req.session && req.session.user ? req.session.user.admin : defaultUser.admin;
 
   // Render the blog page with either the logged-in user's info or the default user info
-  res.redirect('/blog');
+  res.redirect('/home');
 });
 
 app.get('/test', function (req, res) {
@@ -331,7 +331,6 @@ app.get('/blog', function (req, res) {
     p.author,
     p.caption, 
     p.date_created, 
-    p.image_filepath,
     (SELECT COUNT(username) FROM likes l WHERE l.post_id = p.post_id) as like_count,
     EXISTS (
         SELECT 1 FROM likes l WHERE l.post_id = p.post_id AND l.username = $1
@@ -345,20 +344,29 @@ app.get('/blog', function (req, res) {
             'post_id', c.post_id
         ) 
         ORDER BY c.date_created DESC
-    ) AS comments
+    ) AS comments,
+    json_agg(
+        json_build_object(
+            'image_id', i.image_id,
+            'filepath', i.filepath
+        )
+    ) as images
   FROM 
     posts p 
   LEFT JOIN 
     comments c ON c.post_id = p.post_id
+  LEFT JOIN
+    images i ON i.post_id = p.post_id
   GROUP BY 
     P.post_id, 
     p.caption, 
     p.date_created, 
-    p.image_filepath
+    p.author
   ORDER BY 
     p.date_created DESC;`, [username])
 
     .then(posts => {
+      console.log(posts);
       const renderOptions = {
         posts,
         message,
@@ -386,11 +394,26 @@ app.get('/user', function(req,res) {
   FROM users
   WHERE username = '${req.query.username}';`;
   
-  const post_query = `SELECT *
-  FROM posts
-  WHERE posts.author = '${req.query.username}'
-  ORDER BY posts.date_created DESC;
-  `;
+  // const post_query = `SELECT *
+  // FROM posts
+  // WHERE posts.author = '${req.query.username}'
+  // ORDER BY posts.date_created DESC;`;
+
+  const post_query = `
+  SELECT 
+    posts.*,
+    json_agg(json_build_object('image_id', images.image_id, 'filepath', images.filepath)) AS images
+  FROM 
+    posts
+  INNER JOIN 
+    images ON posts.post_id = images.post_id
+  WHERE 
+    posts.author = '${req.query.username}'
+  GROUP BY 
+    posts.post_id
+  ORDER BY 
+    posts.date_created DESC;
+`;
 
   db.task('get-everything', task => {
     return task.batch([
@@ -399,14 +422,28 @@ app.get('/user', function(req,res) {
     ])
   })
   .then (userdata => {
-    // console.log(userdata)
+    console.log("User data: ");
+    console.log(userdata);
+    post_images = []
+    
+    userdata[1].forEach(post => {
+      imgs = post.images;
+      // add post.id to each image arr
+      imgs.forEach(img => {
+        img.post_id = post.post_id;
+      });
+      post_images = post_images.concat(imgs);
+    });
+    console.log("POst images");
+    console.log(post_images);
     res.render('pages/user', 
     {user: userdata[0][0].username, 
       posts: userdata[1],
       username: username,
       admin: admin,
       self: req.query.self,
-      message: req.query.message
+      message: req.query.message,
+      images: post_images
       });
     // add followers, posts when we figure out db issues
   })
@@ -417,13 +454,16 @@ app.get('/user', function(req,res) {
   
 });
 
-app.post('/upload', upload.single('image'), (req, res) => {
+app.post('/upload', upload.array('image'), (req, res) => {
   if (!req.file) {
     console.log("You fucked up the file upload")
     return res.status(400).send('No file uploaded.');
   }
   console.log("file uploaded successfully")
-  res.status(200).send({ url: `uploads/${req.file.filename}` });
+
+  const fileUrls = req.files.map(file => `uploads/${file.filename}`);
+
+  res.status(200).send({ urls: fileUrls});
 });
 
 
@@ -463,32 +503,57 @@ app.get('/post', function (req, res) {
   
 });
 
-app.post('/create-post', upload.single('image'), async (req, res) => {
-  if (!req.file) {
+app.post('/create-post', upload.array('images'), async (req, res) => {
+  console.log("Creating post");
+  if (!req.files) {
     console.log("No file uploaded");
     return res.status(400).send('No file uploaded.');
   }
   const caption = req.body.caption; // Assuming you have a caption field in your form
   const author = req.session.user.username;
-  const imageFilename = 'uploads/' + req.file.filename; // Accessing the filename of the uploaded file
+  // const imageFilename = 'uploads/' + req.file.filename; // Accessing the filename of the uploaded file
   const date_created = new Date();
   let bingo_id = req.body.bingo_id;
   if (bingo_id == "") {
     bingo_id = null;
   }
   // Here you can use both caption and imageFilename to insert into your database or perform other actions
-  console.log("File uploaded successfully", { caption, imageFilename });
+  // console.log("File uploaded successfully", { caption, imageFilename });
 
-  // Example: Insert into database (pseudo code)
-  // await db.insert('posts', { caption, imageFilename });
-  db.none('INSERT INTO posts (caption, author, date_created, image_filepath, bingo_id) VALUES ($1, $2, $3, $4, $5)', [caption, author, date_created, imageFilename, bingo_id]);
-  if (bingo_id){
-    db.none('UPDATE bingo SET completed = true WHERE item_id = $1', [bingo_id]);
+  try {
+
+    await db.tx(async t => {
+
+      const post = await t.one(
+        'INSERT INTO posts (caption, author, date_created, bingo_id) VALUES ($1, $2, $3, $4) RETURNING post_id',
+        [caption, author, date_created, bingo_id]
+      );
+
+      const post_id = post.post_id;
+
+      const imageInsertQueries = req.files.map(file => {
+        const imageFilename = `uploads/${file.filename}`;
+        return t.none(
+          'INSERT INTO images (post_id, filepath) VALUES ($1, $2)',
+          [post_id, imageFilename]
+        );
+      });
+
+      await t.batch(imageInsertQueries);
+
+      if (bingo_id){
+        await t.none('UPDATE bingo SET completed = true, post_id = $1 WHERE item_id = $2', [post_id, bingo_id]);
+      }
+    });
+
+    console.log("Files uploaded successfully", { caption, files: req.files });
+
+    res.redirect('/blog');
+  } catch (error) {
+    console.error('Error uploading files:', error);
+    res.status(500).send('Error uploading files');
   }
 
-  
-  // res.status(200).send({ message: "Post created successfully", url: `uploads/${imageFilename}` });
-  res.redirect('/blog');
 });
 
 app.post('/like-post', async (req, res) => { //like
