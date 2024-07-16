@@ -331,38 +331,54 @@ app.get('/blog', function (req, res) {
     p.author,
     p.caption, 
     p.date_created, 
-    (SELECT COUNT(username) FROM likes l WHERE l.post_id = p.post_id) as like_count,
+    COALESCE(l.like_count, 0) AS like_count,
     EXISTS (
         SELECT 1 FROM likes l WHERE l.post_id = p.post_id AND l.username = $1
     ) AS liked,
-    json_agg(
-        json_build_object(
-            'comment_id', c.comment_id,
-            'username', c.username, 
-            'body', c.body, 
-            'date_created', c.date_created,
-            'post_id', c.post_id
-        ) 
-        ORDER BY c.date_created DESC
-    ) AS comments,
-    json_agg(
-        json_build_object(
-            'image_id', i.image_id,
-            'filepath', i.filepath
-        )
-    ) as images
-  FROM 
+    COALESCE(comments.comments, '[]'::json) AS comments,
+    COALESCE(images.images, '[]'::json) AS images
+FROM 
     posts p 
-  LEFT JOIN 
-    comments c ON c.post_id = p.post_id
-  LEFT JOIN
-    images i ON i.post_id = p.post_id
-  GROUP BY 
-    P.post_id, 
-    p.caption, 
-    p.date_created, 
-    p.author
-  ORDER BY 
+LEFT JOIN (
+    SELECT 
+        post_id,
+        json_agg(
+            json_build_object(
+                'comment_id', comment_id,
+                'username', username,
+                'body', body,
+                'date_created', date_created
+            ) ORDER BY date_created DESC
+        ) AS comments
+    FROM 
+        comments
+    GROUP BY 
+        post_id
+) comments ON comments.post_id = p.post_id
+LEFT JOIN (
+    SELECT 
+        post_id,
+        json_agg(
+            json_build_object(
+                'image_id', image_id,
+                'filepath', filepath
+            )
+        ) AS images
+    FROM 
+        images
+    GROUP BY 
+        post_id
+) images ON images.post_id = p.post_id
+LEFT JOIN (
+    SELECT 
+        post_id,
+        COUNT(username) AS like_count
+    FROM 
+        likes
+    GROUP BY 
+        post_id
+) l ON l.post_id = p.post_id
+ORDER BY 
     p.date_created DESC;`, [username])
 
     .then(posts => {
@@ -582,6 +598,8 @@ app.post('/delete-post', async (req, res) => {
     const { post_id } = req.body;
     await db.none('DELETE FROM likes WHERE post_id = $1', [post_id]);
     await db.none('DELETE FROM comments WHERE post_id = $1', [post_id]);
+    await db.none('DELETE FROM images WHERE post_id = $1', [post_id]);
+    await db.none('UPDATE bingo SET post_id=NULL, completed=false WHERE post_id = $1', [post_id]);
     await db.none('DELETE FROM posts WHERE post_id = $1', [post_id]);
     res.redirect('/blog?message=Post%20deleted');
   } catch (error) {
